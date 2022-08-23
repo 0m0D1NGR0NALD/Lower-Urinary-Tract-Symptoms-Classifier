@@ -50,6 +50,7 @@ def predictor(audio_filename):
         result = 'Infected'
     return result
 
-outputs = gr.outputs.Textbox()
-app = gr.Interface(fn=predictor, inputs='text', outputs=outputs,description="UTI Prediction Model")
+app = gr.Interface(predictor,
+gr.Audio(source="upload",type="filepath",label="Please Upload Audio file here:"),
+gr.Textbox(label="Result"),title="SMART UTI DETECTOR",description="UTI Prediction Model",interpretation="default")
 app.launch()
