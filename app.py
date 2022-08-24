@@ -1,8 +1,21 @@
 import gradio as gr
 import numpy as np
+import pandas as pd
 import joblib
 import librosa
 from sklearn.preprocessing import StandardScaler
+from sklearn import preprocessing
+from sklearn.model_selection import train_test_split 
+
+dataset = pd.read_csv('UTIv2.csv')
+dataset = dataset.drop('filename',axis=1)
+x = dataset.iloc[:, :-1].values
+y = dataset.iloc[:, -1].values
+encoder = preprocessing.LabelEncoder()
+y = encoder.fit_transform(y)
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size = 0.2, random_state = 0)
+sc = StandardScaler()
+sc = sc.fit(x_train)
 
 model = joblib.load('UTI.pkl')
 
@@ -41,8 +54,8 @@ def predictor(audio_filename):
     mfcc20 = v[19]
 
     features = np.array([[chroma_stft,rmse,spec_cent,spec_bw,rolloff,zcr,mfcc1,mfcc2,mfcc3,mfcc4,mfcc5,mfcc6,mfcc7,mfcc8,mfcc9,mfcc10,mfcc11,mfcc12,mfcc13,mfcc14,mfcc15,mfcc16,mfcc17,mfcc18,mfcc19,mfcc20]])
-
-    prediction = model.predict(StandardScaler().fit_transform(features))
+    
+    prediction = model.predict(sc.transform(features))
     
     if prediction[0] == 0:
         result = 'Normal'
@@ -50,7 +63,7 @@ def predictor(audio_filename):
         result = 'Infected'
     return result
 
-app = gr.Interface(predictor,
-gr.Audio(source="upload",type="filepath",label="Please Upload Audio file here:"),
-gr.Textbox(label="Result"),title="SMART UTI DETECTOR",description="UTI Prediction Model",interpretation="default")
+app = gr.Interface(fn=predictor,
+inputs=gr.Audio(source="upload",type="filepath",label="Please Upload Audio file here:"),
+outputs=gr.Textbox(label="Result"),title="SMART LUTS DETECTOR",description="UTI Prediction Model",examples=[["normal 1_rn.wav"]])
 app.launch()
