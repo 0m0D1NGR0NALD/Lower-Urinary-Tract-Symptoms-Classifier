@@ -57,7 +57,7 @@ def predictor(audio_filename):
     
     prediction = model.predict(sc.transform(features))
     
-    if prediction[0] == 0:
+    if prediction[0] == 1:
         result = 'Normal'
     else:
         result = 'Infected'
